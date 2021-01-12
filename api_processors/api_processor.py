@@ -1,5 +1,5 @@
 import requests
-import logging
+from api_logger import ApiLogger
 
 
 class APIProcessor:
@@ -9,21 +9,7 @@ class APIProcessor:
         self.offset = 20
         self.limit = 20
         # TODO: make logging module and use it
-        self._init_logger()
-
-    def _init_logger(self):
-        self.log = logging.getLogger(__name__)
-        self.log.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(f'%(asctime)s - {self.__class__.__name__} - %(message)s',
-                                      "%Y-%m-%d %H:%M:%S")
-        fh = logging.FileHandler('api.log')
-        fh.setLevel(logging.ERROR)
-        fh.setFormatter(formatter)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        ch.setFormatter(formatter)
-        self.log.addHandler(fh)
-        self.log.addHandler(ch)
+        self.log = ApiLogger(self)
 
     def refresh_data(self):
         self.log.info(f'refresh_data - '
