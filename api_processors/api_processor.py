@@ -1,6 +1,5 @@
 import requests
-from api_logger import ApiLogger
-
+from main_logger import MainLogger
 
 class APIProcessor:
     def __init__(self):
@@ -9,7 +8,7 @@ class APIProcessor:
         self.offset = 20
         self.limit = 20
         # TODO: make logging module and use it
-        self.log = ApiLogger(self)
+        self.log = MainLogger(self)
 
     def refresh_data(self):
         self.log.info(f'refresh_data - '
