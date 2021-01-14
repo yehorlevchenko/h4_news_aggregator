@@ -8,6 +8,7 @@ class NEWSLogging:
         self.logger.setLevel(logging.INFO)
 
         self.formatter = logging.Formatter('%(levelname)s: %(message)s')
+        
         self.fh = logging.FileHandler('advanced.log')
         self.fh.setLevel(logging.ERROR)
         self.fh.setFormatter(self.formatter)
