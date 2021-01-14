@@ -63,7 +63,7 @@ class APIProcessor:
         raise NotImplementedError
 
     def _save_data(self, data_to_save):
-        pass
+        raise NotImplementedError
 
 
 if __name__ == '__main__':
