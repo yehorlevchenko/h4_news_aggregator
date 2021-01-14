@@ -1,4 +1,5 @@
 from api_processors.api_processor import APIProcessor
+import logging
 
 
 class NYAPIProcessor(APIProcessor):
@@ -11,16 +12,20 @@ class NYAPIProcessor(APIProcessor):
                             "abstract", "url", "byline", "source",
                             "published_date", "kicker", "subheadline",
                             "related_urls", "multimedia"]
+        self.log = logging.getLogger(__name__)
 
     def _clean_data(self, raw_data):
         clean_data = list()
         raw_news = raw_data['results']
         if not raw_news:
+            self.log.error(f'{__name__} - _clean_data - '
+                           f"can't received {raw_news}")
             raise RuntimeError("No news in received data")
         for item in raw_news:
             cleaned_data = {k: v for k, v in item.items()
                             if k in self.news_fields}
             clean_data.append(cleaned_data)
+            self.log.info(f"{__name__} - _clean_data")
 
         return clean_data
 
