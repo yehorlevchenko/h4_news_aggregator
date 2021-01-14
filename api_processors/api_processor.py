@@ -30,7 +30,7 @@ class APIProcessor:
         try:
             self._save_data(data_to_save=clean_data)
         except Exception as e:
-            logger.error(f'{__name__} - failed to say data: {e}')
+            logger.error(f'{__name__} - failed to save data: {e}')
             return False
         logger.info(f'{__name__} - Done')
         return True
