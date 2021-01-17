@@ -1,6 +1,7 @@
 import requests
 from main_logger import MainLogger
 
+
 class APIProcessor:
     def __init__(self):
         self.url = ""

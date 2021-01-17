@@ -1,6 +1,7 @@
 import psycopg2
-from api_processors.api_processor import APIProcessor
 
+from api_processor import APIProcessor
+from date_to_timeStamp import date_to_timestamp
 
 class NYAPIProcessor(APIProcessor):
 
@@ -27,13 +28,24 @@ class NYAPIProcessor(APIProcessor):
         # TODO: update in accordance with docstring
         clean_data = list()
         raw_news = raw_data['results']
+        list_multi = list()
+        multimedia = ''
+        tuple_list_data = list()
         if not raw_news:
             raise RuntimeError("No news in received data")
         for item in raw_news:
             cleaned_data = {k: v for k, v in item.items()
                             if k in self.news_fields}
             clean_data.append(cleaned_data)
-
+            if type(cleaned_data['multimedia']) is list:
+                for urls_lits in cleaned_data['multimedia']:
+                    list_multi.append(urls_lits["url"])
+            multimedia = '|'.join(list_multi)
+            tuple_list_data.append(('nyt', cleaned_data.get('title'), cleaned_data['abstract'],
+                                    cleaned_data['slug_name'], date_to_timestamp(str(cleaned_data['published_date'])),
+                                    cleaned_data['url'], cleaned_data['source'],
+                                    multimedia))
+        self.log.info(tuple_list_data)
         return clean_data
 
     def _save_data(self, data_to_save):
