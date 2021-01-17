@@ -1,13 +1,14 @@
 import psycopg2
-from api_processors.api_processor import APIProcessor
+from api_processors.api_processor import BaseAPIProcessor
+import settings
 
 
-class NYAPIProcessor(APIProcessor):
+class NYAPIProcessor(BaseAPIProcessor):
 
     def __init__(self):
         super().__init__()
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
-        self.api_key = "6LWMg0c19nLU7dKwBR6QRXQ5A6elwqmp"
+        self.api_key = settings.NYT_API_KEY
         self.news_fields = ["slug_name", "section", "subsection", "title",
                             "abstract", "url", "source", "published_date",
                             "multimedia", "des_facet", "per_facet",
@@ -51,6 +52,7 @@ class NYAPIProcessor(APIProcessor):
         VALUES (%s);
         """
         raise NotImplementedError
+
 
 if __name__ == '__main__':
     t = NYAPIProcessor()
