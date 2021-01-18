@@ -25,6 +25,9 @@ class NYAPIProcessor(APIProcessor):
         :return:
         """
         # TODO: update in accordance with docstring
+        required_fields = ("source_api", "title", "abstract", "slug_name",
+            "published_date", "url", "internal_source", "media_url")
+
         clean_data = list()
         raw_news = raw_data['results']
         if not raw_news:
@@ -34,7 +37,28 @@ class NYAPIProcessor(APIProcessor):
                             if k in self.news_fields}
             clean_data.append(cleaned_data)
 
-        return clean_data
+        result_data = list()
+
+        for item in clean_data:
+            tuple_data = list()
+            for field in required_fields:
+                if field in item:
+                    tuple_data.append(item[field])
+                else:
+                    if field == "source_api":
+                        tuple_data.append("nyt")
+                    elif field == "internal_source":
+                        tuple_data.append(item["source"])
+                    elif field == "media_url":
+                        media_list = item["multimedia"]
+                        if media_list is None:
+                            tuple_data.append(None)
+                        else:
+                            for media in media_list:
+                                if media["format"] == "Normal":
+                                    tuple_data.append(media["url"])
+            result_data.append(tuple(tuple_data))
+        return result_data
 
     def _save_data(self, data_to_save):
         query = """
@@ -51,6 +75,7 @@ class NYAPIProcessor(APIProcessor):
         VALUES (%s);
         """
         raise NotImplementedError
+
 
 if __name__ == '__main__':
     t = NYAPIProcessor()
