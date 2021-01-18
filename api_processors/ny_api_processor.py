@@ -1,5 +1,5 @@
 import psycopg2
-from api_processors.api_processor import APIProcessor
+from api_processor import APIProcessor
 
 
 class NYAPIProcessor(APIProcessor):
@@ -14,6 +14,7 @@ class NYAPIProcessor(APIProcessor):
                             "org_facet", "geo_facet", "ttl_facet",
                             "topic_facet", "porg_facet"]
 
+
     def _clean_data(self, raw_data):
         """
         Will get explicit data from API (list of dicts), remove unnecessary
@@ -25,14 +26,28 @@ class NYAPIProcessor(APIProcessor):
         :return:
         """
         # TODO: update in accordance with docstring
+        news_field_for_tuple = ('source', 'title', 'abstract', 'slug_name',
+                                'published_date', 'url', 'internal_source')
         clean_data = list()
+
         raw_news = raw_data['results']
         if not raw_news:
             raise RuntimeError("No news in received data")
+
         for item in raw_news:
-            cleaned_data = {k: v for k, v in item.items()
-                            if k in self.news_fields}
-            clean_data.append(cleaned_data)
+            clean_data_for_item = [item.get(field)
+                                   for field in news_field_for_tuple]
+
+            try:
+                multimedia = item['multimedia']
+                media_url = multimedia[0]['url']
+            except KeyError:
+                media_url = ''
+            except TypeError:
+                media_url = ''
+
+            clean_data_for_item.append(media_url)
+            clean_data.append(tuple(clean_data_for_item))
 
         return clean_data
 
@@ -51,6 +66,7 @@ class NYAPIProcessor(APIProcessor):
         VALUES (%s);
         """
         raise NotImplementedError
+
 
 if __name__ == '__main__':
     t = NYAPIProcessor()
