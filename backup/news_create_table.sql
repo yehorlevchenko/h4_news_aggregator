@@ -7,5 +7,6 @@ CREATE TABLE news (
     published_date TIMESTAMP NOT NULL,
     url TEXT NOT NULL,
     internal_source VARCHAR(256),
-    media_url TEXT
+    media_url TEXT,
+    media_copyright VARCHAR(256)
 );
