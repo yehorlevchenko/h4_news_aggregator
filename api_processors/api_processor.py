@@ -6,8 +6,8 @@ class BaseAPIProcessor:
     def __init__(self):
         self.url = ""
         self.api_key = ""
-        self.offset = 20
-        self.limit = 20
+        self.offset = 0
+        self.limit = 5
         # TODO: make logging module and use it
         self.log = MainLogger(self)
 

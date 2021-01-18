@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2.extras import execute_values
 from api_processors.api_processor import BaseAPIProcessor
 import settings
 
@@ -10,7 +11,7 @@ class NYAPIProcessor(BaseAPIProcessor):
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
         self.api_key = settings.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
-                            "url", "source", "multimedia"]
+                            "url", "source"]
         self.facet_fields = ["des_facet", "per_facet", "org_facet",
                              "geo_facet", "ttl_facet", "topic_facet",
                              "porg_facet"]
@@ -32,8 +33,8 @@ class NYAPIProcessor(BaseAPIProcessor):
             raise RuntimeError("No news in received data")
         for item in raw_news:
             cleaned_data = ["nyt"]
-            cleaned_data.extend([v for k, v in item.items()
-                                 if k in self.news_fields])
+            cleaned_data.extend([item[k] for k in self.news_fields
+                                 if k in item])
             if not item.get('multimedia'):
                 cleaned_data.extend([None, None])
             else:
@@ -58,11 +59,15 @@ class NYAPIProcessor(BaseAPIProcessor):
             published_date,
             url,
             internal_source,
-            media_url
+            media_url,
+            media_copyright
         )
-        VALUES (%s);
+        VALUES %s;
         """
-        raise NotImplementedError
+        dsn = "dbname=news_api user=yehorlevchenko"
+        with psycopg2.connect(dsn) as conn:
+            with conn.cursor() as cursor:
+                execute_values(cursor, query, data_to_save)
 
 
 if __name__ == '__main__':
