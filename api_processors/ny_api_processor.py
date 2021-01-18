@@ -12,23 +12,33 @@ class NYAPIProcessor(BaseAPIProcessor):
         self.api_key = settings.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
                             "url", "source"]
-        self.facet_fields = ["des_facet", "per_facet", "org_facet",
-                             "geo_facet", "ttl_facet", "topic_facet",
-                             "porg_facet"]
+        self.tag_fields = ["des_facet", "per_facet", "org_facet",
+                           "geo_facet", "ttl_facet", "topic_facet",
+                           "porg_facet"]
+        self.tag_names = {
+            "des_facet": "topic",
+            "org_facet": "organisation",
+            "per_facet": "person",
+            "geo_facet": "geo"
+        }
 
-    def _clean_data(self, raw_data):
+    def _clean_news(self, raw_news):
         """
         Will get explicit data from API (list of dicts), remove unnecessary
         fields from each entry, and prepare a list of tuples for saving
         to the DB.
         Values order for tuple: "nyt", title, abstract, slug_name,
         published_date, url, internal_source, media_url.
-        :param raw_data:
+        :param raw_news:
         :return:
         """
+
+        tags = self._clean_tags(raw_news)
+        self._save_tags(tags)
+
         # TODO: update in accordance with docstring
         clean_data = list()
-        raw_news = raw_data['results']
+        raw_news = raw_news['results']
         if not raw_news:
             raise RuntimeError("No news in received data")
         for item in raw_news:
@@ -49,7 +59,16 @@ class NYAPIProcessor(BaseAPIProcessor):
 
         return clean_data
 
-    def _save_data(self, data_to_save):
+    def _clean_tags(self, raw_news):
+        clean_tags = list()
+        raw_news = raw_news['results']
+        if not raw_news:
+            raise RuntimeError("No tags in received data")
+        for item in raw_news:
+            cleaned_data = {k: v for k, v in item.items()
+                            if k in self.tag_fields}
+
+    def _save_news(self, data_to_save):
         query = """
         INSERT INTO news (
             source_api,
@@ -68,6 +87,22 @@ class NYAPIProcessor(BaseAPIProcessor):
         with psycopg2.connect(dsn) as conn:
             with conn.cursor() as cursor:
                 execute_values(cursor, query, data_to_save)
+
+    def _save_tags(self, data_to_save):
+        query = """
+        INSERT INTO tags (
+            source_api,
+            name,
+            group
+        )
+        VALUES %s;
+        """
+        list_of_tuples = list()
+        for item in data_to_save:
+            for type, tags in item.items():
+                list_of_tuples.extend([('nyt', tag, self.tag_names[type])
+                                       for tag in tags])
+        print(list_of_tuples)
 
 
 if __name__ == '__main__':
