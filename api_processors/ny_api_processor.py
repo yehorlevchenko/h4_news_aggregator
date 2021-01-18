@@ -33,6 +33,7 @@ class NYAPIProcessor(APIProcessor):
             cleaned_data = {k: v for k, v in item.items()
                             if k in self.news_fields}
             clean_data.append(cleaned_data)
+            clean_data = [tuple(dct.items())[0] for dct in clean_data]
 
         return clean_data
 
