@@ -19,12 +19,12 @@ class MainLogger(logging.Logger):
 
 if __name__ == '__main__':
     from api_processors.ny_api_processor import NYAPIProcessor
-    from api_processors.api_processor import APIProcessor
+    from api_processors.api_processor import BaseAPIProcessor
     t = NYAPIProcessor()
     my_log = MainLogger(t)
     my_log.error('error')
     my_log.info('info')
-    t2 = APIProcessor()
+    t2 = BaseAPIProcessor()
     my_log2 = MainLogger(t2)
     my_log2.error('error')
     my_log2.info('info')

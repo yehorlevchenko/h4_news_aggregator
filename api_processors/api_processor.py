@@ -1,7 +1,8 @@
 import requests
 from main_logger import MainLogger
 
-class APIProcessor:
+
+class BaseAPIProcessor:
     def __init__(self):
         self.url = ""
         self.api_key = ""
@@ -67,6 +68,6 @@ class APIProcessor:
 
 
 if __name__ == '__main__':
-    t = APIProcessor()
+    t = BaseAPIProcessor()
     t.refresh_data()
 
