@@ -1,13 +1,18 @@
 import requests
-from main_logger import MainLogger
-
+from settings.generic import *
+from custom_logging.main_logger import MainLogger
 
 class BaseAPIProcessor:
     def __init__(self):
+        self.dsn = f"host={POSTGRES_HOST} " \
+                   f"port={POSTGRES_PORT} " \
+                   f"dbname={POSTGRES_DB_NAME} " \
+                   f"user={POSTGRES_USER} " \
+                   f"password={POSTGRES_PASSWORD}"
         self.url = ""
         self.api_key = ""
         self.offset = 0
-        self.limit = 5
+        self.limit = 10
         # TODO: make logging module and use it
         self.log = MainLogger(self)
 
@@ -23,7 +28,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            clean_data = self._clean_data(raw_data=new_data)
+            clean_news = self._clean_data(raw_data=new_data)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to clean data: '
@@ -31,7 +36,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            self._save_data(data_to_save=clean_data)
+            self._save_data(clean_news)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save data: '
@@ -44,7 +49,8 @@ class BaseAPIProcessor:
     def _get_data(self):
         req_params = {
             "api-key": self.api_key,
-            "offset": self.offset
+            "offset": self.offset,
+            "limit": self.limit
         }
         try:
             response = requests.get(self.url, params=req_params)
@@ -56,7 +62,8 @@ class BaseAPIProcessor:
         if response.status_code != 200:
             self.log.error(f'_get_data - '
                            f'received {response.status_code}')
-            raise RuntimeError(f'{response.status_code}: {response.text}')
+            raise RuntimeError(
+                f'{response.status_code}: {response.text}')
 
         return response.json()
 
