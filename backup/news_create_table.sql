@@ -9,4 +9,5 @@ CREATE TABLE news (
     internal_source VARCHAR(256),
     media_url TEXT,
     media_copyright VARCHAR(256)
+    CONSTRAINT unique_news UNIQUE (title, abstract)
 );
