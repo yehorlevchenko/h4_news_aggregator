@@ -9,5 +9,8 @@ CREATE TABLE news (
     internal_source VARCHAR(256),
     media_url TEXT,
     media_copyright VARCHAR(256)
-    UNIQUE originally_news(title, abstract)
 );
+
+CREATE UNIQUE INDEX original_news ON news (source_api, slug_name, publushed_date);
+
+ALTER TABLE news ADD CONSTRAINT original_news UNIQUE USING INDEX original_news;
