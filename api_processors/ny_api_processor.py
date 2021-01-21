@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extras import execute_values
-from api_processors.api_processor import BaseAPIProcessor
-import settings
+from api_processor import BaseAPIProcessor
+import h4_news_aggregator.settings
 
 
 class NYAPIProcessor(BaseAPIProcessor):
@@ -9,7 +9,7 @@ class NYAPIProcessor(BaseAPIProcessor):
     def __init__(self):
         super().__init__()
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
-        self.api_key = settings.NYT_API_KEY
+        self.api_key = "WwOAsikuTWoGBxTLRXk2AIC7h212ffPF"
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
                             "url", "source"]
         self.tag_fields = ["des_facet", "per_facet", "org_facet",
@@ -21,6 +21,8 @@ class NYAPIProcessor(BaseAPIProcessor):
             "per_facet": "person",
             "geo_facet": "geo"
         }
+        self.cleaned_tags = None
+        self.cleaned_news = None
 
     def _clean_news(self, raw_news):
         """
@@ -32,9 +34,6 @@ class NYAPIProcessor(BaseAPIProcessor):
         :param raw_news:
         :return:
         """
-
-        tags = self._clean_tags(raw_news)
-        self._save_tags(tags)
 
         # TODO: update in accordance with docstring
         clean_data = list()
@@ -59,14 +58,19 @@ class NYAPIProcessor(BaseAPIProcessor):
 
         return clean_data
 
-    def _clean_tags(self, raw_news):
-        clean_tags = list()
-        raw_news = raw_news['results']
-        if not raw_news:
+    def _clean_tags(self, raw_tags):
+        tags = list()
+        raw_tags = raw_tags["results"]
+
+        if not raw_tags:
             raise RuntimeError("No tags in received data")
-        for item in raw_news:
-            cleaned_data = {k: v for k, v in item.items()
-                            if k in self.tag_fields}
+
+        for item in raw_tags:
+
+            for key, tag_name in self.tag_names.items():
+                tag = tuple(["nyt", tag_name, item.get(key)])
+                tags.append(tag)
+        return tags
 
     def _save_news(self, data_to_save):
         query = """
@@ -97,12 +101,14 @@ class NYAPIProcessor(BaseAPIProcessor):
         )
         VALUES %s;
         """
-        list_of_tuples = list()
-        for item in data_to_save:
-            for type, tags in item.items():
-                list_of_tuples.extend([('nyt', tag, self.tag_names[type])
-                                       for tag in tags])
-        print(list_of_tuples)
+        dsn = "dbname=news_api user=yehorlevchenko"
+        with psycopg2.connect(dsn) as conn:
+            with conn.cursor() as cursor:
+                execute_values(cursor, query, data_to_save)
+
+    def _clean_data(self, raw_data):
+        self.cleaned_tags = self._clean_tags(raw_data)
+        self.cleaned_news = self._clean_news(raw_data)
 
 
 if __name__ == '__main__':
