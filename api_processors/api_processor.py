@@ -31,10 +31,19 @@ class BaseAPIProcessor:
             return False
 
         try:
-            self._save_data(data_to_save=clean_data)
+            self._save_news(data_to_save=clean_data)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save data: '
+                           f'{e}')
+            return False
+        self.log.info(f'refresh_data - '
+                      f'Done')
+        try:
+            self._save_tags(data_to_save=clean_data)
+        except Exception as e:
+            self.log.error(f'refresh_data - '
+                           f'failed to save tags: '
                            f'{e}')
             return False
         self.log.info(f'refresh_data - '
@@ -63,7 +72,10 @@ class BaseAPIProcessor:
     def _clean_data(self, raw_data):
         raise NotImplementedError
 
-    def _save_data(self, data_to_save):
+    def _save_news(self, data_to_save):
+        raise NotImplementedError
+
+    def _save_tags(self, data_to_save):
         raise NotImplementedError
 
 
