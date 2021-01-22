@@ -3,7 +3,7 @@ CREATE TABLE news (
     source_api VARCHAR(50) NOT NULL,
     title VARCHAR(512) NOT NULL,
     abstract TEXT,
-    slug_name VARCHAR(128),
+    slug_name VARCHAR(128) NOT NULL,
     published_date TIMESTAMP NOT NULL,
     url TEXT NOT NULL,
     internal_source VARCHAR(256),
@@ -15,3 +15,5 @@ CREATE TABLE news (
 CREATE UNIQUE INDEX original_news ON news (source_api, slug_name, publushed_date);
 
 ALTER TABLE news ADD CONSTRAINT original_news UNIQUE USING INDEX original_news;
+
+ALTER TABLE news ADD CONSTRAINT slug_min_len CHECK (length(slug_name) > 0);
