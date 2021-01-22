@@ -23,7 +23,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            clean_data = self._clean_data(raw_data=new_data)
+            clean_news, clean_tags = self._clean_data(raw_data=new_data)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to clean data: '
@@ -31,7 +31,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            self._save_news(data_to_save=clean_data)
+            self._save_news(data_to_save=clean_news)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save data: '
@@ -40,7 +40,7 @@ class BaseAPIProcessor:
         self.log.info(f'refresh_data - '
                       f'Done')
         try:
-            self._save_tags(data_to_save=clean_data)
+            self._save_tags(data_to_save=clean_tags)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save tags: '

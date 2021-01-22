@@ -37,12 +37,12 @@ class NYAPIProcessor(BaseAPIProcessor):
         # self._save_tags(tags)
 
         # TODO: update in accordance with docstring
-        clean_data = list()
+        clean_news = list()
+        clean_tags = list()
         raw_news = raw_data['results']
-        clean_tags = dict()
-        news_data = list()
         if not raw_news:
             raise RuntimeError("No news in received data")
+
         for item in raw_news:
             cleaned_data = ["nyt"]
             cleaned_data.extend([item[k] for k in self.news_fields
@@ -54,14 +54,23 @@ class NYAPIProcessor(BaseAPIProcessor):
                                 if m["format"] == "Normal"]
                 if not normal_media:
                     cleaned_data.extend([None, None])
-                clean_tags = {k: v for k, v in item.items()
-                              if k in self.tag_fields}
-                cleaned_data.extend([normal_media[0]["url"],
-                                     normal_media[0]["copyright"], list(clean_tags.items())])
-            clean_data.append(tuple(cleaned_data))
-        return clean_data
+                else:
+                    cleaned_data.extend([normal_media[0]["url"],
+                                         normal_media[0]["copyright"]])
+            clean_news.append(tuple(cleaned_data))
+
+            clean_tag = {k: v for k, v in item.items()
+                         if k in self.tag_fields}
+
+            for type, tags in clean_tag.items():
+                if not tags:
+                    continue
+                clean_tags.extend([('nyt', tag, self.tag_names[type])
+                                   for tag in tags])
+        return clean_news, clean_tags
 
     def _save_news(self, data_to_save):
+        # TODO: consider making singe _save_data method using utils get_
         query = """
         INSERT INTO news (
             source_api,
@@ -74,7 +83,8 @@ class NYAPIProcessor(BaseAPIProcessor):
             media_url,
             media_copyright
         )
-        VALUES %s;
+        VALUES %s
+        ON CONFLICT ON CONSTRAINT min_len DO NOTHING;
         """
         dsn = "dbname=news_api user=yehorlevchenko"
         with psycopg2.connect(dsn) as conn:
@@ -82,20 +92,20 @@ class NYAPIProcessor(BaseAPIProcessor):
                 execute_values(cursor, query, data_to_save)
 
     def _save_tags(self, data_to_save):
+        # TODO: consider making singe _save_data method using utils get_
         query = """
         INSERT INTO tags (
             source_api,
-            name,
-            group
+            tag_name,
+            tag_group
         )
-        VALUES %s;
+        VALUES %s
+        ON CONFLICT (source_api, tag_name, tag_group) DO NOTHING;
         """
-        list_of_tuples = list()
-        for item in data_to_save:
-            for type, tags in item.items():
-                list_of_tuples.extend([('nyt', tag, self.tag_names[type])
-                                       for tag in tags])
-        print(list_of_tuples)
+        dsn = "dbname=news_api user=yehorlevchenko"
+        with psycopg2.connect(dsn) as conn:
+            with conn.cursor() as cursor:
+                execute_values(cursor, query, data_to_save)
 
 
 if __name__ == '__main__':
