@@ -7,7 +7,7 @@ class BaseAPIProcessor:
         self.url = ""
         self.api_key = ""
         self.offset = 0
-        self.limit = 5
+        self.limit = 10
         # TODO: make logging module and use it
         self.log = MainLogger(self)
 
@@ -23,7 +23,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            clean_news, clean_tags = self._clean_data(raw_data=new_data)
+            clean_news = self._clean_data(raw_data=new_data)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to clean data: '
@@ -31,19 +31,10 @@ class BaseAPIProcessor:
             return False
 
         try:
-            self._save_news(data_to_save=clean_news)
+            self._save_data(clean_news)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save data: '
-                           f'{e}')
-            return False
-        self.log.info(f'refresh_data - '
-                      f'Done')
-        try:
-            self._save_tags(data_to_save=clean_tags)
-        except Exception as e:
-            self.log.error(f'refresh_data - '
-                           f'failed to save tags: '
                            f'{e}')
             return False
         self.log.info(f'refresh_data - '
@@ -53,7 +44,8 @@ class BaseAPIProcessor:
     def _get_data(self):
         req_params = {
             "api-key": self.api_key,
-            "offset": self.offset
+            "offset": self.offset,
+            "limit": self.limit
         }
         try:
             response = requests.get(self.url, params=req_params)
@@ -72,10 +64,7 @@ class BaseAPIProcessor:
     def _clean_data(self, raw_data):
         raise NotImplementedError
 
-    def _save_news(self, data_to_save):
-        raise NotImplementedError
-
-    def _save_tags(self, data_to_save):
+    def _save_data(self, data_to_save):
         raise NotImplementedError
 
 
