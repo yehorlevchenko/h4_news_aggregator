@@ -1,7 +1,9 @@
 import psycopg2
 from psycopg2.extras import execute_values
 from api_processor import BaseAPIProcessor
-# import settings
+import settings
+import traceback
+import sys
 
 
 class NYAPIProcessor(BaseAPIProcessor):
@@ -9,7 +11,7 @@ class NYAPIProcessor(BaseAPIProcessor):
     def __init__(self):
         super().__init__()
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
-        self.api_key = "6LWMg0c19nLU7dKwBR6QRXQ5A6elwqmp"
+        self.api_key = settings.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
                             "url", "source", "des_facet", "per_facet",
                             "org_facet", "geo_facet", "ttl_facet",
@@ -95,34 +97,38 @@ class NYAPIProcessor(BaseAPIProcessor):
         )
         VALUES %s;
         """
-        dsn = "dbname=news_api user=yehorlevchenko"
-        with psycopg2.connect(dsn) as conn:
-            with conn.cursor() as cursor:
-                for item in clean_news:
-                    # TODO: exception handling
-                    cursor.execute(news_query, item)
-                    if cursor.rowcount == 0:
-                        continue
-                    news_id = cursor.fetchone()
-                    tags = list()
-                    for category in self.tag_names:
-                        raw_tags = item[category]
-                        if not raw_tags:
+        dsn = settings.DSN
+        try:
+            with psycopg2.connect(dsn) as conn:
+                with conn.cursor() as cursor:
+                    for item in clean_news:
+                        # TODO: exception handling
+                        cursor.execute(news_query, item)
+                        if cursor.rowcount == 0:
                             continue
-                        tags.extend([('nyt', tag, self.tag_names[category])
-                                    for tag in raw_tags])
-                    if not tags:
-                        continue
-                    # TODO: exception handling
-                    execute_values(cursor, tags_query, tags)
-                    if cursor.rowcount != len(tags):
-                        print(item)
-                        raise RuntimeError(f"Tags not saved: got {cursor.rowcount}, has {len(tags)}")
+                        news_id = cursor.fetchone()
+                        tags = list()
+                        for category in self.tag_names:
+                            raw_tags = item[category]
+                            if not raw_tags:
+                                continue
+                            tags.extend([('nyt', tag, self.tag_names[category])
+                                         for tag in raw_tags])
+                        if not tags:
+                            continue
+                        # TODO: exception handling
+                        execute_values(cursor, tags_query, tags)
+                        if cursor.rowcount != len(tags):
+                            print(item)
+                            raise RuntimeError(f"Tags not saved: got {cursor.rowcount}, has {len(tags)}")
 
-                    tags_id = [row[0] for row in cursor.fetchall()]
-                    news_and_tags = [(news_id, tag) for tag in tags_id]
-                    # TODO: exception handling
-                    execute_values(cursor, news_to_tags_query, news_and_tags)
+                        tags_id = [row[0] for row in cursor.fetchall()]
+                        news_and_tags = [(news_id, tag) for tag in tags_id]
+                        # TODO: exception handling
+                        execute_values(cursor, news_to_tags_query, news_and_tags)
+        except Exception as ex:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            self.log.error(f'{"".join(traceback.format_exception(exc_type, exc_value, exc_tb))}')
 
 
 if __name__ == '__main__':
