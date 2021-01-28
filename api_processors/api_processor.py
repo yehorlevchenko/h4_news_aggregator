@@ -42,8 +42,7 @@ class BaseAPIProcessor:
                            f'failed to save data: '
                            f'{e}')
             return False
-        self.log.info(f'refresh_data - '
-                      f'Done')
+
         try:
             self._save_tags(data_to_save=clean_tags)
         except Exception as e:
