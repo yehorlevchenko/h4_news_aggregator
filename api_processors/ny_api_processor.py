@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extras import execute_values
 from api_processor import BaseAPIProcessor
-import settings
+from settings import generic
 
 
 class NYAPIProcessor(BaseAPIProcessor):
@@ -9,7 +9,7 @@ class NYAPIProcessor(BaseAPIProcessor):
     def __init__(self):
         super().__init__()
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
-        self.api_key = settings.NYT_API_KEY
+        self.api_key = generic.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
                             "url", "source", "des_facet", "per_facet",
                             "org_facet", "geo_facet", "ttl_facet",
