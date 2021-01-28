@@ -84,7 +84,7 @@ class NYAPIProcessor(BaseAPIProcessor):
             media_copyright
         )
         VALUES %s
-        ON CONFLICT ON CONSTRAINT min_len DO NOTHING;
+        ON CONFLICT ON CONSTRAINT slug_min_len DO NOTHING;
         """
         conn = psycopg2.connect(self.dsn)
         cursor = conn.cursor()
