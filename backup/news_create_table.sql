@@ -4,7 +4,7 @@ CREATE TABLE news (
     title VARCHAR(512) NOT NULL,
     abstract TEXT,
     slug_name VARCHAR(128) NOT NULL,
-    published_date TIMESTAMP NOT NULL,
+    published_date TIMESTAMP WITH TIME ZONE NOT NULL,
     url TEXT NOT NULL,
     internal_source VARCHAR(256),
     media_url TEXT,
