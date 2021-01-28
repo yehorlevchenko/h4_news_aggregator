@@ -32,46 +32,32 @@ class NYAPIProcessor(BaseAPIProcessor):
         :param raw_news:
         :return:
         """
-
-        # tags = self._clean_tags(raw_news)
-        # self._save_tags(tags)
-
         # TODO: update in accordance with docstring
         clean_news = list()
-        clean_tags = list()
         raw_news = raw_data['results']
         if not raw_news:
             raise RuntimeError("No news in received data")
 
         for item in raw_news:
-            cleaned_data = ["nyt"]
-            cleaned_data.extend([item[k] for k in self.news_fields
-                                 if k in item])
-            if not item.get('multimedia'):
-                cleaned_data.extend([None, None])
-            else:
+            item = {k: v for k, v in item.items()
+                    if k in self.news_fields}
+            item['source_api'] = "nyt"
+            item['slug_name'] = item['slug_name'].lower()
+            item['media_url'] = None
+            item['media_copyright'] = None
+            if item.get('multimedia'):
                 normal_media = [m for m in item['multimedia']
                                 if m["format"] == "Normal"]
-                if not normal_media:
-                    cleaned_data.extend([None, None])
-                else:
-                    cleaned_data.extend([normal_media[0]["url"],
-                                         normal_media[0]["copyright"]])
-            clean_news.append(tuple(cleaned_data))
+                if normal_media:
+                    item['media_url'] = normal_media[0]["url"]
+                    item['media_copyright'] = normal_media[0]["copyright"]
+            # del (item['multimedia'])
+            item['internal_source'] = item.pop('source')
+            clean_news.append(item)
+        return clean_news
 
-            clean_tag = {k: v for k, v in item.items()
-                         if k in self.tag_fields}
-
-            for type, tags in clean_tag.items():
-                if not tags:
-                    continue
-                clean_tags.extend([('nyt', tag, self.tag_names[type])
-                                   for tag in tags])
-        return clean_news, clean_tags
-
-    def _save_news(self, data_to_save):
-        # TODO: consider making singe _save_data method using utils get_
-        query = """
+    def _save_data(self, clean_news):
+        news_query = """
         INSERT INTO news (
             source_api,
             title,
@@ -83,28 +69,62 @@ class NYAPIProcessor(BaseAPIProcessor):
             media_url,
             media_copyright
         )
-        VALUES %s
-        ON CONFLICT ON CONSTRAINT original_news DO UPDATE SET source_api=EXCLUDED.source_api
-        ;
+        VALUES (%(source_api)s, %(title)s, %(abstract)s, %(slug_name)s, 
+                %(published_date)s, %(url)s, %(internal_source)s, %(media_url)s,
+                %(media_copyright)s)
+        ON CONFLICT ON CONSTRAINT original_news 
+        DO NOTHING
+        RETURNING id;
         """
-        with psycopg2.connect(self.dsn) as conn:
-            with conn.cursor() as cursor:
-                execute_values(cursor, query, data_to_save)
-
-    def _save_tags(self, data_to_save):
-        # TODO: consider making singe _save_data method using utils get_
-        query = """
+        tags_query = """
         INSERT INTO tags (
             source_api,
             tag_name,
             tag_group
         )
         VALUES %s
-        ON CONFLICT (source_api, tag_name, tag_group) DO NOTHING;
+        ON CONFLICT (source_api, tag_name, tag_group) 
+        DO 
+            UPDATE SET
+                source_api = EXCLUDED.source_api
+        RETURNING id;
         """
-        with psycopg2.connect(self.dsn) as conn:
+        news_to_tags_query = """
+        INSERT INTO news_to_tags (
+            news_id,
+            tag_id
+        )
+        VALUES %s;
+        """
+        dsn = self.dsn
+        with psycopg2.connect(dsn) as conn:
             with conn.cursor() as cursor:
-                execute_values(cursor, query, data_to_save)
+                for item in clean_news:
+                    # TODO: exception handling
+                    cursor.execute(news_query, item)
+                    if cursor.rowcount == 0:
+                        continue
+                    news_id = cursor.fetchone()
+                    tags = list()
+                    for category in self.tag_names:
+                        raw_tags = item[category]
+                        if not raw_tags:
+                            continue
+                        tags.extend([('nyt', tag, self.tag_names[category])
+                                     for tag in raw_tags])
+                    if not tags:
+                        continue
+                    # TODO: exception handling
+                    execute_values(cursor, tags_query, tags)
+                    if cursor.rowcount != len(tags):
+                        print(item)
+                        raise RuntimeError(f"Tags not saved: got {cursor.rowcount}, has {len(tags)}")
+
+                    tags_id = [row[0] for row in cursor.fetchall()]
+                    news_and_tags = [(news_id, tag) for tag in tags_id]
+                    # TODO: exception handling
+                    execute_values(cursor, news_to_tags_query,
+                                   news_and_tags)
 
 
 if __name__ == '__main__':
