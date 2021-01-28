@@ -83,7 +83,9 @@ class NYAPIProcessor(BaseAPIProcessor):
             media_url,
             media_copyright
         )
-        VALUES %s;
+        VALUES %s
+        ON CONFLICT UPDATE SET source_api=EXCLUDED.source_api
+        ;
         """
         with psycopg2.connect(self.dsn) as conn:
             with conn.cursor() as cursor:
@@ -106,5 +108,8 @@ class NYAPIProcessor(BaseAPIProcessor):
 
 
 if __name__ == '__main__':
+    from time import sleep
     t = NYAPIProcessor()
-    t.refresh_data()
+    while True:
+        t.refresh_data()
+        sleep(350)
