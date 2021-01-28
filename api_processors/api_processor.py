@@ -1,14 +1,14 @@
 import requests
-from settings import generic
+from settings.generic import *
 from custom_logging.main_logger import MainLogger
 
 class BaseAPIProcessor:
     def __init__(self):
-        self.dsn = f"host={generic.POSTGRES_HOST} " \
-                   f"port={generic.POSTGRES_PORT} " \
-                   f"dbname={generic.POSTGRES_DB_NAME} " \
-                   f"user={generic.POSTGRES_USER} " \
-                   f"password={generic.POSTGRES_PASSWORD}"
+        self.dsn = f"host={POSTGRES_HOST} " \
+                   f"port={POSTGRES_PORT} " \
+                   f"dbname={POSTGRES_DB_NAME} " \
+                   f"user={POSTGRES_USER} " \
+                   f"password={POSTGRES_PASSWORD}"
         self.url = ""
         self.api_key = ""
         self.offset = 0
