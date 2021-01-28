@@ -4,11 +4,11 @@ from custom_logging.main_logger import MainLogger
 
 class BaseAPIProcessor:
     def __init__(self):
-        self.dsn = f"host='{settings.POSTGRES_HOST}' " \
-              f"port='{settings.POSTGRES_PORT}' " \
-              f"dbname='{settings.POSTGRES_DB_NAME}' " \
-              f"user={settings.POSTGRES_USER}" \
-              f"password='{settings.POSTGRES_PASSWORD}' "
+        self.dsn = f"host={settings.POSTGRES_HOST} " \
+              f"port={settings.POSTGRES_PORT} " \
+              f"dbname={settings.POSTGRES_DB_NAME} " \
+              f"user={settings.POSTGRES_USER} " \
+              f"password={settings.POSTGRES_PASSWORD}"
         self.url = ""
         self.api_key = ""
         self.offset = 0
