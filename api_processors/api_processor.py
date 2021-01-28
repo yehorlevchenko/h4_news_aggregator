@@ -8,7 +8,7 @@ class BaseAPIProcessor:
               f"port='{settings.POSTGRES_PORT}' " \
               f"dbname='{settings.POSTGRES_DB_NAME}' " \
               f"user={settings.POSTGRES_USER}" \
-              f"dbname='{settings.POSTGRES_PASSWORD}' "
+              f"password='{settings.POSTGRES_PASSWORD}' "
         self.url = ""
         self.api_key = ""
         self.offset = 0
