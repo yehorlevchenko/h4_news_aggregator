@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extras import execute_values
-from .api_processor import BaseAPIProcessor
+from api_processor import BaseAPIProcessor
 import settings
 
 
