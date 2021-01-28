@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extras import execute_values
 from api_processor import BaseAPIProcessor
-# import settings
+import settings
 
 
 class NYAPIProcessor(BaseAPIProcessor):
@@ -9,7 +9,7 @@ class NYAPIProcessor(BaseAPIProcessor):
     def __init__(self):
         super().__init__()
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
-        self.api_key = "6LWMg0c19nLU7dKwBR6QRXQ5A6elwqmp"
+        self.api_key = settings.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
                             "url", "source"]
         self.tag_fields = ["des_facet", "per_facet", "org_facet",
@@ -86,7 +86,7 @@ class NYAPIProcessor(BaseAPIProcessor):
         VALUES %s
         ON CONFLICT ON CONSTRAINT min_len DO NOTHING;
         """
-        dsn = "dbname=news_api user=yehorlevchenko"
+        dsn = f"dbname=news_api user={settings.POSTGRES_USER}"
         with psycopg2.connect(dsn) as conn:
             with conn.cursor() as cursor:
                 execute_values(cursor, query, data_to_save)
@@ -102,7 +102,7 @@ class NYAPIProcessor(BaseAPIProcessor):
         VALUES %s
         ON CONFLICT (source_api, tag_name, tag_group) DO NOTHING;
         """
-        dsn = "dbname=news_api user=yehorlevchenko"
+        dsn = f"dbname=news_api user={settings.POSTGRES_USER}"
         with psycopg2.connect(dsn) as conn:
             with conn.cursor() as cursor:
                 execute_values(cursor, query, data_to_save)
