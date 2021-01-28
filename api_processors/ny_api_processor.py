@@ -11,10 +11,9 @@ class NYAPIProcessor(BaseAPIProcessor):
         self.url = "https://api.nytimes.com/svc/news/v3/content/all/all.json"
         self.api_key = settings.NYT_API_KEY
         self.news_fields = ["title", "abstract", "slug_name", "published_date",
-                            "url", "source"]
-        self.tag_fields = ["des_facet", "per_facet", "org_facet",
-                           "geo_facet", "ttl_facet", "topic_facet",
-                           "porg_facet"]
+                            "url", "source", "des_facet", "per_facet",
+                            "org_facet", "geo_facet", "ttl_facet",
+                            "topic_facet", "porg_facet", "multimedia"]
         self.tag_names = {
             "des_facet": "topic",
             "org_facet": "organisation",
