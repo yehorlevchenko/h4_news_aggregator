@@ -84,7 +84,7 @@ class NYAPIProcessor(BaseAPIProcessor):
             media_copyright
         )
         VALUES %s
-        ON CONFLICT UPDATE SET source_api=EXCLUDED.source_api
+        ON CONFLICT DO UPDATE SET source_api=EXCLUDED.source_api
         ;
         """
         with psycopg2.connect(self.dsn) as conn:
