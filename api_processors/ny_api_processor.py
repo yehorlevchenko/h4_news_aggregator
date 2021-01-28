@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extras import execute_values
-from api_processor import BaseAPIProcessor
+from .api_processor import BaseAPIProcessor
 import settings
 
 
@@ -86,8 +86,7 @@ class NYAPIProcessor(BaseAPIProcessor):
         VALUES %s
         ON CONFLICT ON CONSTRAINT min_len DO NOTHING;
         """
-        dsn = f"dbname=news_api user={settings.POSTGRES_USER}"
-        with psycopg2.connect(dsn) as conn:
+        with psycopg2.connect(self.dsn) as conn:
             with conn.cursor() as cursor:
                 execute_values(cursor, query, data_to_save)
 
@@ -102,8 +101,7 @@ class NYAPIProcessor(BaseAPIProcessor):
         VALUES %s
         ON CONFLICT (source_api, tag_name, tag_group) DO NOTHING;
         """
-        dsn = f"dbname=news_api user={settings.POSTGRES_USER}"
-        with psycopg2.connect(dsn) as conn:
+        with psycopg2.connect(self.dsn) as conn:
             with conn.cursor() as cursor:
                 execute_values(cursor, query, data_to_save)
 
