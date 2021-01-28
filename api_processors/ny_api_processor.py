@@ -85,9 +85,9 @@ class NYAPIProcessor(BaseAPIProcessor):
         )
         VALUES %s;
         """
-        conn = psycopg2.connect(self.dsn)
-        cursor = conn.cursor()
-        execute_values(cursor, query, data_to_save)
+        with psycopg2.connect(self.dsn) as conn:
+            with conn.cursor() as cursor:
+                execute_values(cursor, query, data_to_save)
 
     def _save_tags(self, data_to_save):
         # TODO: consider making singe _save_data method using utils get_
