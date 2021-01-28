@@ -84,6 +84,9 @@ class BaseAPIProcessor:
 
 
 if __name__ == '__main__':
+    from time import sleep
     t = BaseAPIProcessor()
-    t.refresh_data()
+    while True:
+        t.refresh_data()
+        sleep(350)
 
