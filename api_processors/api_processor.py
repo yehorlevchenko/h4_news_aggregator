@@ -31,7 +31,7 @@ class BaseAPIProcessor:
             return False
 
         try:
-            self._save_data(data_to_save=clean_data)
+            self._save_data(clean_news=clean_data)
         except Exception as e:
             self.log.error(f'refresh_data - '
                            f'failed to save data: '
@@ -63,7 +63,7 @@ class BaseAPIProcessor:
     def _clean_data(self, raw_data):
         raise NotImplementedError
 
-    def _save_data(self, data_to_save):
+    def _save_data(self, clean_news):
         raise NotImplementedError
 
 
