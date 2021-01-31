@@ -1,5 +1,5 @@
 CREATE TABLE news (
-    id SERIAL,
+    id SERIAL PRIMARY KEY,
     source_api VARCHAR(50) NOT NULL,
     title VARCHAR(512) NOT NULL,
     abstract TEXT,
