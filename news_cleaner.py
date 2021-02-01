@@ -32,3 +32,6 @@ def clean_old_news():
 
 
 schedule.every().day.at("00:01").do(clean_old_news)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
