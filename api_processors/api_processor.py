@@ -12,7 +12,7 @@ class BaseAPIProcessor:
         self.url = ""
         self.api_key = ""
         self.offset = 0
-        self.limit = 10
+        self.limit = 400
         # TODO: make logging module and use it
         self.log = MainLogger(self)
 
