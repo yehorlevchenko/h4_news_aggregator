@@ -1,5 +1,5 @@
 CREATE TABLE tags (
-    id SERIAL,
+    id SERIAL PRIMARY KEY,
     source_api VARCHAR(50) NOT NULL,
     tag_name VARCHAR(256) NOT NULL,
     tag_group VARCHAR(256)
