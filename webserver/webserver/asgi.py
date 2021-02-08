@@ -1,5 +1,5 @@
 """
-ASGI config for news_api project.
+ASGI config for webserver project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'news_api.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'webserver.settings')
 
 application = get_asgi_application()
