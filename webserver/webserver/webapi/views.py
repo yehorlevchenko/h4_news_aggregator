@@ -1,27 +1,12 @@
-from rest_framework import viewsets
-from webserver.webapi.serializers import NewsSerializer, TagsSerializer, NewsToTagsSerializer
+from django.http import JsonResponse
+from django.core import serializers
+import json
 from webserver.webapi.models import News, Tags, NewsToTags
 
 
-class NewsViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = News.objects.all()
-    serializer_class = NewsSerializer
-
-
-class TagsViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Tags.objects.all()
-    serializer_class = TagsSerializer
-
-
-class NewsToTagsViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = NewsToTags.objects.all()
-    serializer_class = NewsToTagsSerializer
+def news(request):
+    news = News.objects.all()
+    if 'source_api' in request.GET:
+        news = news.filter(source_api=request.GET['source_api'])
+    news = json.loads(serializers.serialize('json', news))
+    return JsonResponse({'response': news})
