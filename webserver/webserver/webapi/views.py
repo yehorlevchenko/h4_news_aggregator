@@ -21,7 +21,7 @@ def news(request):
             else:
                 news = News.objects.all()
         # TODO: use _serialize_to_json(news)
-        news = json.loads(serializers.serialize('json', news))
+        news = _serialize_to_json(news)
         return JsonResponse({'response': news})
 
 
@@ -34,4 +34,5 @@ def _serialize_to_json(data):
     """
     raw_data = json.loads(serializers.serialize('json', data))
     # TODO: add dicts reformatting
+    return raw_data
 

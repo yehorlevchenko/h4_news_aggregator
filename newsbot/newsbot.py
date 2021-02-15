@@ -38,4 +38,7 @@ def send_nytimes_settings(message):
     bot.send_message(message.chat.id, json.dumps(res.json()[:5]))
 
 
+def _format_news(raw_data):
+    pass
+
 bot.polling()
