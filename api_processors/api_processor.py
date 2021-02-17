@@ -1,6 +1,8 @@
 import requests
-from settings.generic import *
-from custom_logging.main_logger import MainLogger
+
+from api_logger import MainLogger
+from settings import *
+
 
 class BaseAPIProcessor:
     def __init__(self):

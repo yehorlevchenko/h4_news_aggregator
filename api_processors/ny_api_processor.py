@@ -1,7 +1,8 @@
 import psycopg2
 from psycopg2.extras import execute_values
-from api_processors.api_processor import BaseAPIProcessor
-from settings.generic import *
+
+from api_processor import BaseAPIProcessor
+from settings import *
 
 
 class NYAPIProcessor(BaseAPIProcessor):
@@ -127,6 +128,10 @@ class NYAPIProcessor(BaseAPIProcessor):
 
 
 if __name__ == '__main__':
+    import sys
+    path = '/home/H4newsapi/h4_news_aggregator/'
+    if path not in sys.path:
+        sys.path.append(path)
     from time import sleep
     t = NYAPIProcessor()
     while True:
