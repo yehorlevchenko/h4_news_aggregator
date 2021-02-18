@@ -1,28 +1,42 @@
 from django.http import JsonResponse
 from django.core import serializers
+from copy import copy
 import json
-from webserver.webapi.models import News, Tags, NewsToTags
+from webserver.webapi.models import News, Tags, NewsToTags, TgUser
+
+
+def start(request):
+    if request.method == 'GET':
+        user, _ = TgUser.objects.get_or_create(id=int(request.GET['id']))
+        user.username = request.GET.get('username')
+        user.first_name = request.GET.get('first_name')
+        user.last_name = request.GET.get('last_name')
+        user.language_code = request.GET.get('language_code')
+        user.save()
+        return JsonResponse({'status_code': 200})
 
 
 def news(request):
     if request.method == 'GET':
-        if 'id' in request.GET:
-            id = int(request.GET['id'])
-            news = [News.objects.get(pk=id)]
+        # TODO: MAJOR FIX: unknown parameters cause objects.all(), should return 403 Bad Request
+        field_names = [field.name for field in News._meta.get_fields()]
+        valid_parameters = [parameter for parameter in request.GET if parameter in field_names]
+        kwargs = {par: request.GET[par] for par in valid_parameters}
+        try:
+            news_list = News.objects.filter(**kwargs)
+        except Exception as e:
+            return JsonResponse({'status_code': 500,
+                                 'response': [],
+                                 'error': e})
+        if news_list:
+            news_list = _serialize_to_json(news_list)
+            return JsonResponse({'status_code': 200,
+                                 'response': news_list,
+                                 'error': None})
         else:
-            # TODO: better
-            # TODO: this should be sequential filtering, not if-elif-elif
-            if 'source_api' in request.GET:
-                source_api = request.GET['source_api']
-                news = News.objects.filter(source_api=source_api)
-            elif 'published_date' in request.GET:
-                published_date = request.GET['published_date']
-                news = News.objects.filter(published_date=published_date)
-            else:
-                news = News.objects.all()
-        # TODO: use _serialize_to_json(news)
-        news = _serialize_to_json(news)
-        return JsonResponse({'response': news})
+            return JsonResponse({'status_code': 404,
+                                 'response': [],
+                                 'error': None})
 
 
 def _serialize_to_json(data):
@@ -33,6 +47,11 @@ def _serialize_to_json(data):
     :return:
     """
     raw_data = json.loads(serializers.serialize('json', data))
-    # TODO: add dicts reformatting
-    return raw_data
+    result = []
+    for item in raw_data:
+        item_dict = {'id': item['pk']}
+        item_dict.update(item['fields'])
+        result.append(item_dict)
+    # return json.dumps(result, skipkeys=True, ensure_ascii=False)
+    return result
 

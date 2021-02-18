@@ -21,8 +21,14 @@ import json
 
 API_TOKEN='1579083588:AAEzkj36aB9q1sZZ7C0BvCykeQawpJahqOA'
 
+BASE_URL = 'http://127.0.0.1:8000/api'
+
 bot = telebot.TeleBot(API_TOKEN)
 
+@bot.message_handler(commands=['start'])
+def start(message):
+    _ = requests.get(f'{BASE_URL}/start/', params=message.json['from'])
+    bot.send_message(f'Hello, {message.json["from"].get("username", "User")}')
 
 @bot.message_handler(commands=['source'])
 def send_welcome(message):

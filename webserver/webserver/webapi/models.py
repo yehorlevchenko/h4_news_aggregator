@@ -41,3 +41,13 @@ class NewsToTags(models.Model):
         db_table = 'news_to_tags'
 
 
+class TgUser(models.Model):
+    username = models.CharField(max_length=1024, null=True)
+    first_name = models.CharField(max_length=1024, blank=True, null=True)
+    second_name = models.CharField(max_length=1024, blank=True, null=True)
+    language_code = models.CharField(max_length=10)
+
+    class Meta:
+        managed = False
+        db_table = 'tg_user'
+
