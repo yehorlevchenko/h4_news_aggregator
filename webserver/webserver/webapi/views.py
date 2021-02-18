@@ -37,7 +37,7 @@ def _serialize_to_json(data):
     return raw_data
     reform_list = list()
     for key, value in raw_data.items():
-        dict_with_items = {'id': item['pk']}
+        dict_with_items = {'id': value['pk']}
         if 'fields' in key:
             dict_with_items.update(value[key])
         reform_list.append(dict_with_items)
