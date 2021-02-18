@@ -5,24 +5,26 @@ from webserver.webapi.models import News, Tags, NewsToTags
 
 
 def news(request):
+    FILTERING_FIELDS = ('source_api', 'title', 'abstract',
+                        'slug_name', 'published_date')
+
     if request.method == 'GET':
         if 'id' in request.GET:
             id = int(request.GET['id'])
             news = [News.objects.get(pk=id)]
         else:
-            # TODO: better
-            # TODO: this should be sequential filtering, not if-elif-elif
-            if 'source_api' in request.GET:
-                source_api = request.GET['source_api']
-                news = News.objects.filter(source_api=source_api)
-            elif 'published_date' in request.GET:
-                published_date = request.GET['published_date']
-                news = News.objects.filter(published_date=published_date)
-            else:
-                news = News.objects.all()
+            get_parameters = request.GET.items()
+            filter = {key: value for (key, value) in get_parameters
+                      if key in FILTERING_FIELDS}
+            news = News.objects.filter(**filter)
+
         # TODO: use _serialize_to_json(news)
         news = _serialize_to_json(news)
         return JsonResponse({'response': news})
+
+    #     # TODO: use _serialize_to_json(news)
+    #     news = _serialize_to_json(news)
+    #     return JsonResponse({'response': news})
 
 
 def _serialize_to_json(data):
